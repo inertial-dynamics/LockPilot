@@ -12,6 +12,7 @@ if (!capture.IsOpened())
     Console.WriteLine($"Cannot open camera {settings.CameraIndex}");
     return;
 }
+capture.Set(VideoCaptureProperties.BufferSize, 1);
 
 using var tracker = new TargetTracker(settings);
 using var image = new Mat();
