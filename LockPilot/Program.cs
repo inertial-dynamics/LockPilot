@@ -31,6 +31,8 @@ else
 Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 while (true)
 {
+    Thread.Sleep(1);
+
     if (!capture.Read(image))
     {
         Console.WriteLine("Failed to read frame from camera");
