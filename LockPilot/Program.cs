@@ -21,7 +21,7 @@ var windowName = nameof(LockPilot);
 var writer = args.Length > 0 ? new UdpWriter(args[0]) : null;
 if (writer != null)
 {
-    Console.WriteLine("On the receiver run: ffplay -fflags nobuffer -flags low_delay -framedrop -probesize 32 -analyzeduration 0 -sync ext -f mjpeg \"udp://0.0.0.0:5000?fifo_size=500&overrun_nonfatal=1\"");
+    Console.WriteLine("On the receiver run: ffplay -fflags nobuffer -framedrop -probesize 32 -sync ext -f mjpeg udp://0.0.0.0:5000");
 }
 else
 {
