@@ -51,7 +51,7 @@ while (true)
 
     if (writer != null)
     {
-        writer.Write(image, 80);
+        writer.Write(image);
     }
     else
     {

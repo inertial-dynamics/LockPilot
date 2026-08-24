@@ -20,9 +20,17 @@ class UdpWriter : IDisposable
         m_Client.Dispose();
     }
 
-    public void Write(Mat image, int quality)
+    public void Write(Mat image)
     {
-        Cv2.ImEncode(".jpg", image, out var buffer, new ImageEncodingParam(ImwriteFlags.JpegQuality, quality));
-        m_Client.Send(buffer, buffer.Length);
+        for (var quality = 80; quality >= 10; quality -= 10)
+        {
+            Cv2.ImEncode(".jpg", image, out var buffer, new ImageEncodingParam(ImwriteFlags.JpegQuality, quality));
+            if (buffer.Length <= 65507)
+            {
+                m_Client.Send(buffer, buffer.Length);
+                return;
+            }
+        }
+        Console.WriteLine($"Failed to encode image to fit in UDP packet (size: {image.Width}x{image.Height})");
     }
 }
