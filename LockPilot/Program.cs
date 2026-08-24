@@ -6,10 +6,10 @@ var settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, "appsetti
 var aimColor = ToScalar(settings.AimColorBgr);
 var detectionColor = ToScalar(settings.DetectionColorBgr);
 
-using var capture = new VideoCapture(settings.CameraIndex);
+using var capture = CreateVideoCapture(settings);
 if (!capture.IsOpened())
 {
-    Console.WriteLine($"Cannot open camera {settings.CameraIndex}");
+    Console.WriteLine(settings.PiCamera == null ? $"Cannot open camera {settings.CameraIndex}" : "Cannot open Raspberry Pi camera");
     return;
 }
 capture.Set(VideoCaptureProperties.BufferSize, 1);
@@ -82,6 +82,21 @@ if (writer != null)
 else
 {
     Cv2.DestroyWindow(windowName);
+}
+
+static VideoCapture CreateVideoCapture(AppSettings settings)
+{
+    var piSettings = settings.PiCamera;
+    if (piSettings != null)
+    {
+        var pipeline =
+            "libcamerasrc ! videoconvert ! " +
+            $"videoscale ! video/x-raw,width={piSettings.Width},height={piSettings.Height} ! " +
+            "videoconvert ! video/x-raw,format=BGR ! " +
+            "appsink drop=true max-buffers=1";
+        return new VideoCapture(pipeline, VideoCaptureAPIs.GSTREAMER);
+    }
+    return new VideoCapture(settings.CameraIndex);
 }
 
 static Scalar ToScalar(int[] bgr) => new(bgr[0], bgr[1], bgr[2]);
