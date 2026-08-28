@@ -6,14 +6,13 @@ namespace LockPilot.Tracking;
 class TargetTracker(AppSettings settings) : IDisposable
 {
     readonly LucasKanadeTracker m_Lk = new(settings.MinLkPoints, settings.MaxLkError);
-    readonly OrbRelocalizer m_Orb = new();
-    readonly Stopwatch m_OrbTimer = new();
+    readonly YoloRelocalizer m_Relocalizer = new(settings.Yolo);
+    readonly Stopwatch m_RelocalizeTimer = new();
     Mat m_Image;
 
     public void Capture(Mat image, Rect aimRect)
     {
-        using var roiImage = new Mat(image, aimRect);
-        m_Orb.SetTemplate(roiImage.Clone());
+        m_Relocalizer.LockOn(image, aimRect);
 
         m_Image?.Dispose();
         m_Image = new();
@@ -21,7 +20,7 @@ class TargetTracker(AppSettings settings) : IDisposable
 
         m_Lk.Initialize(m_Image, aimRect);
         DetectionRect = aimRect;
-        m_OrbTimer.Restart();
+        m_RelocalizeTimer.Restart();
         State = TargetTrackerState.Tracking;
     }
 
@@ -31,15 +30,16 @@ class TargetTracker(AppSettings settings) : IDisposable
         m_Image = null;
 
         m_Lk.ClearPoints();
+        m_Relocalizer.Reset();
         DetectionRect = new();
-        m_OrbTimer.Reset();
+        m_RelocalizeTimer.Reset();
         State = TargetTrackerState.Idle;
     }
 
     public void Dispose()
     {
         m_Image?.Dispose();
-        m_Orb.Dispose();
+        m_Relocalizer.Dispose();
     }
 
     public TargetTrackerState State { get; private set; }
@@ -65,18 +65,18 @@ class TargetTracker(AppSettings settings) : IDisposable
                 DetectionRect = lkRect;
             }
         }
-        var orbStatus = false;
-        if (!m_OrbTimer.IsRunning || m_OrbTimer.Elapsed.TotalSeconds >= settings.OrbIntervalSeconds || !lkStatus)
+        var relocStatus = false;
+        if (!m_RelocalizeTimer.IsRunning || m_RelocalizeTimer.Elapsed.TotalSeconds >= settings.RelocalizeIntervalSeconds || !lkStatus)
         {
-            orbStatus = m_Orb.Locate(image, out var orbRect);
-            if (orbStatus)
+            relocStatus = m_Relocalizer.Locate(image, DetectionRect, out var relocRect);
+            if (relocStatus)
             {
-                DetectionRect = orbRect;
-                m_Lk.Initialize(grayImage, orbRect);
+                DetectionRect = relocRect;
+                m_Lk.Initialize(grayImage, relocRect);
             }
-            m_OrbTimer.Restart();
+            m_RelocalizeTimer.Restart();
         }
-        State = lkStatus || orbStatus ? TargetTrackerState.Tracking : TargetTrackerState.Lost;
+        State = lkStatus || relocStatus ? TargetTrackerState.Tracking : TargetTrackerState.Lost;
 
         m_Image?.Dispose();
         m_Image = grayImage;

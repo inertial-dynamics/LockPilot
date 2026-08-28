@@ -364,3 +364,7 @@ FodyWeavers.xsd
 
 # Visual Studio debugger
 launchSettings.json
+
+# YOLO models
+*.onnx
+*.pt
