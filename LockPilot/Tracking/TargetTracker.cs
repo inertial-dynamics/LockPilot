@@ -65,18 +65,25 @@ class TargetTracker(AppSettings settings) : IDisposable
                 DetectionRect = lkRect;
             }
         }
-        var relocStatus = false;
-        if (!m_RelocalizeTimer.IsRunning || m_RelocalizeTimer.Elapsed.TotalSeconds >= settings.RelocalizeIntervalSeconds || !lkStatus)
+        if (!m_RelocalizeTimer.IsRunning || m_RelocalizeTimer.Elapsed.TotalSeconds >= settings.RelocalizeIntervalSeconds || !lkStatus && State != TargetTrackerState.Lost)
         {
-            relocStatus = m_Relocalizer.Locate(image, DetectionRect, out var relocRect);
+            var relocStatus = m_Relocalizer.Locate(image, DetectionRect, out var relocRect);
             if (relocStatus)
             {
                 DetectionRect = relocRect;
                 m_Lk.Initialize(grayImage, relocRect);
             }
+            else
+            {
+                m_Lk.ClearPoints();
+            }
+            State = relocStatus ? TargetTrackerState.Tracking : TargetTrackerState.Lost;
             m_RelocalizeTimer.Restart();
         }
-        State = lkStatus || relocStatus ? TargetTrackerState.Tracking : TargetTrackerState.Lost;
+        else
+        {
+            State = lkStatus ? TargetTrackerState.Tracking : TargetTrackerState.Lost;
+        }
 
         m_Image?.Dispose();
         m_Image = grayImage;
