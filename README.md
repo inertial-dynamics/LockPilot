@@ -24,7 +24,7 @@ The current state is drawn in the corner of the frame.
 
 | Key       | Action
 |-----------|--------
-| `Space`   | Capture / re-acquire the target in the reticle
+| `Space`   | Capture the target in the reticle
 | `R`       | Reset to Idle
 | `Esc`/`Q` | Quit
 
