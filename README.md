@@ -51,15 +51,6 @@ In UDP mode, keys are read from the console, not from the OpenCV window.
 | `Yolo.Confidence`            | `0.25`           | Minimum detection confidence.
 | `Yolo.IoU`                   | `0.45`           | NMS threshold (overlap of boxes of the same class).
 
-Optional `PiCamera`:
-
-```json
-"PiCamera": {
-  "Width": 1280,
-  "Height": 720
-}
-```
-
 ## UDP streaming
 
 On the receiver:
