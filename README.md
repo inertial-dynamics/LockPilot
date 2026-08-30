@@ -4,9 +4,9 @@ A .NET 8 console app for live camera video, target lock inside a reticle, and tr
 
 ## Run
 
-You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file to the project; the build copies it to the output directory.
+You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
 
-The preview window uses OpenCV HighGUI. With no arguments the picture is shown locally; with a UDP address, frames are sent over the network (see below).
+The preview window uses OpenCV HighGUI. With no arguments, the picture is shown locally; with a UDP address, frames are sent over the network (see below).
 
 ## How it works
 
@@ -15,7 +15,7 @@ The preview window uses OpenCV HighGUI. With no arguments the picture is shown l
    - YOLO looks for detections whose center is inside the reticle and remembers the class of the one closest to the reticle center;
    - Shi-Tomasi feature points are collected inside the reticle for Lucas–Kanade.
 3. Every frame, Lucas–Kanade moves those points with optical flow. The detection box is the bounding box of the remaining points (with a small padding).
-4. Every `RelocalizeIntervalSeconds` (and immediately if LK lost its points) YOLO searches again for an object of **the same class**, closest to the last box. On success, LK points are re-initialized in the new box.
+4. Every `RelocalizeIntervalSeconds` (and immediately if LK loses its points), YOLO searches again for an object of **the same class**, closest to the last box. On success, LK points are re-initialized in the new box.
 5. If both LK and YOLO fail — state **Lost**, the detection box is not drawn. The reticle stays. Space again starts a new lock.
 
 The current state is drawn in the corner of the frame.
@@ -28,7 +28,7 @@ The current state is drawn in the corner of the frame.
 | `R`       | Reset to Idle
 | `Esc`/`Q` | Quit
 
-In UDP mode keys are read from the console, not from the OpenCV window.
+In UDP mode, keys are read from the console, not from the OpenCV window.
 
 ## Settings
 
@@ -68,4 +68,4 @@ On the receiver:
 ffplay -fflags nobuffer -framedrop -probesize 32 -sync ext -f mjpeg udp://0.0.0.0:5000
 ```
 
-Default port is `5000` if the URI omits it.
+The default port is `5000` if the URI omits it.
