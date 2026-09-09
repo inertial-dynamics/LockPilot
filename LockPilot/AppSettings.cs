@@ -6,8 +6,6 @@ class AppSettings
 {
     public required int CameraIndex { get; init; }
 
-    public PiCameraSettings PiCamera { get; init; }
-
     public required int AimWidth { get; init; }
 
     public required int AimHeight { get; init; }
@@ -25,13 +23,6 @@ class AppSettings
     public required YoloSettings Yolo { get; init; }
 
     public static AppSettings Load(string path) => JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path));
-
-    public class PiCameraSettings
-    {
-        public required int Width { get; init; }
-
-        public required int Height { get; init; }
-    }
 
     public class YoloSettings
     {

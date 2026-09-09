@@ -9,7 +9,7 @@ var detectionColor = ToScalar(settings.DetectionColorBgr);
 using var capture = CreateVideoCapture(settings);
 if (!capture.IsOpened())
 {
-    Console.WriteLine(settings.PiCamera == null ? $"Cannot open camera {settings.CameraIndex}" : "Cannot open Raspberry Pi camera");
+    Console.WriteLine("Cannot open camera via GStreamer");
     return;
 }
 capture.Set(VideoCaptureProperties.BufferSize, 1);
@@ -86,17 +86,9 @@ else
 
 static VideoCapture CreateVideoCapture(AppSettings settings)
 {
-    var piSettings = settings.PiCamera;
-    if (piSettings != null)
-    {
-        var pipeline =
-            "libcamerasrc ! videoconvert ! " +
-            $"videoscale ! video/x-raw,width={piSettings.Width},height={piSettings.Height} ! " +
-            "videoconvert ! video/x-raw,format=BGR ! " +
-            "appsink drop=true max-buffers=1";
-        return new VideoCapture(pipeline, VideoCaptureAPIs.GSTREAMER);
-    }
-    return new VideoCapture(settings.CameraIndex);
+    var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
+    var pipeline = $"{source} ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1";
+    return new VideoCapture(pipeline, VideoCaptureAPIs.GSTREAMER);
 }
 
 static Scalar ToScalar(int[] bgr) => new(bgr[0], bgr[1], bgr[2]);

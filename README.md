@@ -1,6 +1,6 @@
 # LockPilot
 
-A .NET 8 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Runs on Windows (webcam) and Raspberry Pi (libcamera + GStreamer).
+A .NET 8 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture always uses GStreamer: `mfvideosrc` on Windows and `libcamerasrc` on Linux (Raspberry Pi). Frame size is the camera native resolution.
 
 ## Run
 
@@ -36,10 +36,7 @@ In UDP mode, keys are read from the console, not from the OpenCV window.
 
 | Setting                      | Default Value    | Meaning
 |------------------------------|------------------|--------
-| `CameraIndex`                | `0`              | OpenCV camera index (`0` is usually the built-in camera). Ignored if `PiCamera` is set.
-| `PiCamera`                   |                  | Optional. If present, capture uses GStreamer `libcamerasrc` (Raspberry Pi) instead of `CameraIndex`.
-| `PiCamera.Width`             |                  | Pi camera frame width in pixels.
-| `PiCamera.Height`            |                  | Pi camera frame height in pixels.
+| `CameraIndex`                | `0`              | Camera index for Windows `mfvideosrc` (`0` is usually the built-in camera). Unused on Linux.
 | `AimWidth`                   | `160`            | Reticle width in pixels.
 | `AimHeight`                  | `120`            | Reticle height in pixels.
 | `AimColorBgr`                | `[0, 255, 0]`    | Reticle color, a three-int **BGR** array (not RGB). Green by default.
