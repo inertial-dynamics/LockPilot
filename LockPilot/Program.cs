@@ -25,7 +25,7 @@ if (!capture.IsOpened)
 using var tracker = new TargetTracker(settings);
 using var image = new Mat();
 
-Console.WriteLine($"RTP H.264 to {settings.Rtp.Host}:{settings.Rtp.Port}");
+Console.WriteLine($"RTP H.264 to {settings.Udp.Host}:{settings.Udp.RtpPort}");
 Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 while (true)
 {

@@ -18,7 +18,7 @@ class AppSettings
 
     public required YoloSettings Yolo { get; init; }
 
-    public required RtpSettings Rtp { get; init; }
+    public required UdpSettings Udp { get; init; }
 
     public static AppSettings Load(string path) => JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path));
 
@@ -31,10 +31,12 @@ class AppSettings
         public required float IoU { get; init; }
     }
 
-    public class RtpSettings
+    public class UdpSettings
     {
         public required string Host { get; init; }
 
-        public required int Port { get; init; }
+        public required int RtpPort { get; init; }
+
+        public required int OverlayPort { get; init; }
     }
 }
