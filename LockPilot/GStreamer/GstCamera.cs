@@ -30,7 +30,12 @@ class GstCamera : IDisposable
     private void OpenCore(AppSettings settings)
     {
         var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
-        var description = $"{source} ! videoconvert ! video/x-raw,format=BGR ! appsink name=sink drop=true max-buffers=1 sync=false";
+        var appSinkTail = "videoconvert ! video/x-raw,format=BGR ! appsink name=sink drop=true max-buffers=1 sync=false";
+        var encoder = OperatingSystem.IsWindows() ? "mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
+        var rtpTail = $"videoconvert ! {encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.Rtp.Host} port={settings.Rtp.Port} sync=false";
+        var description = $"{source} ! tee name=t " +
+            $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=2 ! {rtpTail} " +
+            $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=1 leaky=downstream ! {appSinkTail}";
         if (Global.ParseLaunch(description) is not Pipeline pipeline)
         {
             Error = "GStreamer did not produce a pipeline";
