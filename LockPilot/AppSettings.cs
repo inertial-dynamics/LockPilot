@@ -10,10 +10,6 @@ class AppSettings
 
     public required int AimHeight { get; init; }
 
-    public required int[] AimColorBgr { get; init; }
-
-    public required int[] DetectionColorBgr { get; init; }
-
     public required double RelocalizeIntervalSeconds { get; init; }
 
     public required int MinLkPoints { get; init; }
