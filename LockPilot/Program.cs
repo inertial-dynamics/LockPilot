@@ -14,8 +14,6 @@ catch (Exception ex)
 }
 
 var settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
-var aimColor = ToScalar(settings.AimColorBgr);
-var detectionColor = ToScalar(settings.DetectionColorBgr);
 
 using var capture = GstCamera.Open(settings);
 if (!capture.IsOpened)
@@ -27,17 +25,7 @@ if (!capture.IsOpened)
 using var tracker = new TargetTracker(settings);
 using var image = new Mat();
 
-var windowName = nameof(LockPilot);
-var writer = args.Length > 0 ? new UdpWriter(args[0]) : null;
-if (writer != null)
-{
-    Console.WriteLine("On the receiver run: ffplay -fflags nobuffer -framedrop -probesize 32 -sync ext -f mjpeg udp://0.0.0.0:5000");
-}
-else
-{
-    Cv2.NamedWindow(windowName, WindowFlags.AutoSize);
-}
-
+Console.WriteLine($"RTP H.264 to {settings.Rtp.Host}:{settings.Rtp.Port}");
 Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 while (true)
 {
@@ -51,24 +39,17 @@ while (true)
 
     tracker.Update(image);
 
-    var aimRect = Geometry.GetCenterRect(image.Width, image.Height, settings.AimWidth, settings.AimHeight);
-    Cv2.Rectangle(image, aimRect, aimColor, 2);
     if (tracker.State == TargetTrackerState.Tracking)
     {
-        Cv2.Rectangle(image, tracker.DetectionRect, detectionColor, 2);
-    }
-    Cv2.PutText(image, $"{tracker.State}", new(10, 28), HersheyFonts.HersheySimplex, 0.7, new(0xff, 0, 0), 2);
-
-    if (writer != null)
-    {
-        writer.Write(image);
+        var box = tracker.DetectionRect;
+        Console.WriteLine($"{tracker.State} {box.X},{box.Y},{box.Width},{box.Height}");
     }
     else
     {
-        Cv2.ImShow(windowName, image);
+        Console.WriteLine(tracker.State);
     }
 
-    var key = ReadKey(writer != null);
+    var key = ReadKey();
     if (key is (int)ConsoleKey.Escape or 'q' or 'Q')
     {
         break;
@@ -80,28 +61,13 @@ while (true)
     }
     if (key == ' ')
     {
+        var aimRect = Geometry.GetCenterRect(image.Width, image.Height, settings.AimWidth, settings.AimHeight);
         tracker.Capture(image, aimRect);
-        continue;
     }
 }
 
-if (writer != null)
+static int ReadKey()
 {
-    writer.Dispose();
-}
-else
-{
-    Cv2.DestroyWindow(windowName);
-}
-
-static Scalar ToScalar(int[] bgr) => new(bgr[0], bgr[1], bgr[2]);
-
-static int ReadKey(bool fromConsole)
-{
-    if (!fromConsole)
-    {
-        return Cv2.WaitKey(1);
-    }
     if (!Console.KeyAvailable)
     {
         return -1;
