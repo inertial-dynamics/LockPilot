@@ -23,9 +23,11 @@ if (!capture.IsOpened)
 }
 
 using var tracker = new TargetTracker(settings);
+using var overlayWriter = new UdpJsonWriter(settings.Udp.Host, settings.Udp.OverlayPort);
 using var image = new Mat();
 
 Console.WriteLine($"RTP H.264 to {settings.Udp.Host}:{settings.Udp.RtpPort}");
+Console.WriteLine($"Overlay JSON to {settings.Udp.Host}:{settings.Udp.OverlayPort}");
 Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 while (true)
 {
@@ -38,16 +40,7 @@ while (true)
     }
 
     tracker.Update(image);
-
-    if (tracker.State == TargetTrackerState.Tracking)
-    {
-        var box = tracker.DetectionRect;
-        Console.WriteLine($"{tracker.State} {box.X},{box.Y},{box.Width},{box.Height}");
-    }
-    else
-    {
-        Console.WriteLine(tracker.State);
-    }
+    overlayWriter.Write(tracker);
 
     var key = ReadKey();
     if (key is (int)ConsoleKey.Escape or 'q' or 'Q')
