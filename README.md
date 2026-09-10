@@ -1,12 +1,12 @@
 # LockPilot
 
-A .NET 8 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture always uses GStreamer: `mfvideosrc` on Windows and `libcamerasrc` on Linux (Raspberry Pi). Frame size is the camera native resolution.
+A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net `appsink` (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. On Windows install the official GStreamer MSVC x86_64 runtime.
 
 ## Run
 
 You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
 
-The preview window uses OpenCV HighGUI. With no arguments, the picture is shown locally; with a UDP address, frames are sent over the network (see below).
+The preview window uses OpenCV HighGUI. With no arguments, the picture is shown locally; with a UDP address, frames are sent over the network (see below). On Windows the official GStreamer MSVC x86_64 runtime must be installed.
 
 ## How it works
 

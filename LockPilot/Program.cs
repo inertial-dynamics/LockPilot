@@ -1,18 +1,28 @@
 ﻿using LockPilot;
+using LockPilot.GStreamer;
 using LockPilot.Tracking;
 using OpenCvSharp;
+
+try
+{
+    GstRuntime.Initialize();
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Cannot initialize GStreamer: {ex.Message}");
+    return;
+}
 
 var settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
 var aimColor = ToScalar(settings.AimColorBgr);
 var detectionColor = ToScalar(settings.DetectionColorBgr);
 
-using var capture = CreateVideoCapture(settings);
-if (!capture.IsOpened())
+using var capture = GstCamera.Open(settings);
+if (!capture.IsOpened)
 {
-    Console.WriteLine("Cannot open camera via GStreamer");
+    Console.WriteLine($"Cannot open camera via GStreamer: {capture.Error}");
     return;
 }
-capture.Set(VideoCaptureProperties.BufferSize, 1);
 
 using var tracker = new TargetTracker(settings);
 using var image = new Mat();
@@ -82,13 +92,6 @@ if (writer != null)
 else
 {
     Cv2.DestroyWindow(windowName);
-}
-
-static VideoCapture CreateVideoCapture(AppSettings settings)
-{
-    var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
-    var pipeline = $"{source} ! videoconvert ! video/x-raw,format=BGR ! appsink drop=true max-buffers=1";
-    return new VideoCapture(pipeline, VideoCaptureAPIs.GSTREAMER);
 }
 
 static Scalar ToScalar(int[] bgr) => new(bgr[0], bgr[1], bgr[2]);
