@@ -1,12 +1,12 @@
 # LockPilot
 
-A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP (same pipeline as [video-link](https://github.com/inertial-dynamics/video-link)); tracking reads a parallel BGR `appsink` and prints state to the console so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
+A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP (same pipeline as [video-link](https://github.com/inertial-dynamics/video-link)); tracking reads a parallel BGR `appsink` and sends state plus the detection box as JSON over UDP so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
 
 ## Run
 
 You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
 
-On Windows the official GStreamer MSVC x86_64 runtime must be installed. RTP destination comes from settings (`Rtp.Host` / `Rtp.Port`).
+On Windows the official GStreamer MSVC x86_64 runtime must be installed. RTP and overlay share `Udp.Host`; RTP uses `Udp.RtpPort`, overlay JSON uses `Udp.OverlayPort`.
 
 ## How it works
 
@@ -18,7 +18,7 @@ On Windows the official GStreamer MSVC x86_64 runtime must be installed. RTP des
 4. Every `RelocalizeIntervalSeconds` (and immediately if LK loses its points), YOLO searches again for an object of **the same class**, closest to the last box. On success, LK points are re-initialized in the new box.
 5. If both LK and YOLO fail — state **Lost**. Space again starts a new lock.
 
-The current state (and the detection box while tracking) is printed to the console.
+The current state is sent each frame as a JSON UDP datagram. The detection box is included only while tracking, for example `{"State":"Tracking","Rect":{"X":10,"Y":20,"Width":160,"Height":120}}`.
 
 ## Controls
 
@@ -45,11 +45,22 @@ Keys are read from the console.
 | `Yolo.ModelName`             | `yolov8n.onnx`   | ONNX file name in the `Models` folder next to the exe.
 | `Yolo.Confidence`            | `0.25`           | Minimum detection confidence.
 | `Yolo.IoU`                   | `0.45`           | NMS threshold (overlap of boxes of the same class).
-| `Rtp.Host`                   | `127.0.0.1`      | RTP destination host.
-| `Rtp.Port`                   | `5000`           | RTP destination UDP port.
+| `Udp.Host`                   | `127.0.0.1`      | Destination host for RTP and overlay JSON.
+| `Udp.RtpPort`                | `5000`           | RTP destination UDP port.
+| `Udp.OverlayPort`            | `5001`           | Overlay JSON destination UDP port.
 
 ## RTP streaming
 
 Raw camera frames go out as H.264 RTP/UDP (`rtph264pay` payload type 96). Tracking does not overlay the stream.
 
-On the receiver, use the sibling [video-link](https://github.com/inertial-dynamics/video-link) RX scripts (`windows/rtp-rx.bat` or `linux/rtp-rx.sh`), listening on the same UDP port as `Rtp.Port`.
+On the receiver, use the sibling [video-link](https://github.com/inertial-dynamics/video-link) RX scripts (`windows/rtp-rx.bat` or `linux/rtp-rx.sh`), listening on the same UDP port as `Udp.RtpPort`.
+
+## Overlay JSON
+
+Each processed frame sends one UTF-8 JSON datagram to `Udp.Host`:`Udp.OverlayPort`:
+
+```json
+{"State":"Tracking","Rect":{"X":10,"Y":20,"Width":160,"Height":120}}
+```
+
+`State` is `Idle`, `Tracking`, or `Lost`. `Rect` is the box in camera pixels while tracking; otherwise it is `null`.
