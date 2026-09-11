@@ -16,6 +16,8 @@ class AppSettings
 
     public required double MaxLkError { get; init; }
 
+    public required int CommandPort { get; init; }
+
     public required YoloSettings Yolo { get; init; }
 
     public required GroundStationSettings GroundStation { get; init; }
