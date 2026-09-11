@@ -15,8 +15,7 @@ class TargetTracker(AppSettings settings) : IDisposable
         m_Relocalizer.LockOn(image, aimRect);
 
         m_Image?.Dispose();
-        m_Image = new();
-        Cv2.CvtColor(image, m_Image, ColorConversionCodes.BGR2GRAY);
+        m_Image = image.Clone();
 
         m_Lk.Initialize(m_Image, aimRect);
         DetectionRect = aimRect;
@@ -53,13 +52,10 @@ class TargetTracker(AppSettings settings) : IDisposable
             return;
         }
 
-        var grayImage = new Mat();
-        Cv2.CvtColor(image, grayImage, ColorConversionCodes.BGR2GRAY);
-
         var lkStatus = false;
         if (m_Image != null)
         {
-            lkStatus = m_Lk.Track(m_Image, grayImage, out var lkRect);
+            lkStatus = m_Lk.Track(m_Image, image, out var lkRect);
             if (lkStatus)
             {
                 DetectionRect = lkRect;
@@ -71,7 +67,7 @@ class TargetTracker(AppSettings settings) : IDisposable
             if (relocStatus)
             {
                 DetectionRect = relocRect;
-                m_Lk.Initialize(grayImage, relocRect);
+                m_Lk.Initialize(image, relocRect);
             }
             else
             {
@@ -86,6 +82,6 @@ class TargetTracker(AppSettings settings) : IDisposable
         }
 
         m_Image?.Dispose();
-        m_Image = grayImage;
+        m_Image = image.Clone();
     }
 }

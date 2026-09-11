@@ -30,7 +30,7 @@ class GstCamera : IDisposable
     private void OpenCore(AppSettings settings)
     {
         var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
-        var appSinkTail = "videoconvert ! video/x-raw,format=BGR ! appsink name=sink drop=true max-buffers=1 sync=false";
+        var appSinkTail = "videoconvert ! video/x-raw,format=GRAY8 ! appsink name=sink drop=true max-buffers=1 sync=false";
         var encoder = OperatingSystem.IsWindows() ? "mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
         var rtpTail = $"videoconvert ! {encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.Udp.Host} port={settings.Udp.RtpPort} sync=false";
         var description = $"{source} ! tee name=t " +
@@ -93,7 +93,7 @@ class GstCamera : IDisposable
                 if (structure.GetInt("width", out var width) && structure.GetInt("height", out var height))
                 {
                     using var map = buffer.Map(MapFlags.Read);
-                    image.Create(height, width, MatType.CV_8UC3);
+                    image.Create(height, width, MatType.CV_8UC1);
                     map.Span.CopyTo(image.AsSpan<byte>());
                     return true;
                 }
