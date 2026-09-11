@@ -52,12 +52,15 @@ static Command? ReadCommand()
 
 async Task ReceiveOverlay()
 {
+    var textLength = 0;
     while (!overlayToken.IsCancellationRequested)
     {
         try
         {
             var result = await overlayClient.ReceiveAsync(overlayToken.Token);
-            Console.WriteLine(Encoding.UTF8.GetString(result.Buffer));
+            var text = Encoding.UTF8.GetString(result.Buffer);
+            Console.Write("\r" + text.PadRight(Math.Max(textLength, text.Length)));
+            textLength = text.Length;
         }
         catch (OperationCanceledException)
         {
