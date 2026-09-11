@@ -32,7 +32,7 @@ class GstCamera : IDisposable
         var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
         var appSinkTail = "videoconvert ! video/x-raw,format=GRAY8 ! appsink name=sink drop=true max-buffers=1 sync=false";
         var encoder = OperatingSystem.IsWindows() ? "mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
-        var rtpTail = $"videoconvert ! {encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.Udp.Host} port={settings.Udp.RtpPort} sync=false";
+        var rtpTail = $"videoconvert ! {encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.GroundStation.Host} port={settings.GroundStation.RtpPort} sync=false";
         var description = $"{source} ! tee name=t " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=2 ! {rtpTail} " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=1 leaky=downstream ! {appSinkTail}";

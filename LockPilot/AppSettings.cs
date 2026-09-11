@@ -18,7 +18,7 @@ class AppSettings
 
     public required YoloSettings Yolo { get; init; }
 
-    public required UdpSettings Udp { get; init; }
+    public required GroundStationSettings GroundStation { get; init; }
 
     public static AppSettings Load(string path) => JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path));
 
@@ -31,7 +31,7 @@ class AppSettings
         public required float IoU { get; init; }
     }
 
-    public class UdpSettings
+    public class GroundStationSettings
     {
         public required string Host { get; init; }
 
