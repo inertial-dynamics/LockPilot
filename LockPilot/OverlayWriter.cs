@@ -1,18 +1,19 @@
-using System.Net.Sockets;
-using System.Text;
+using LockPilot.Tracking;
+using NetMQ;
+using NetMQ.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LockPilot.Tracking;
 
 namespace LockPilot;
 
 class OverlayWriter : IDisposable
 {
-    readonly UdpClient m_Client = new();
+    readonly RadioSocket m_Socket = new();
 
     public OverlayWriter(string host, int port)
     {
-        m_Client.Connect(host, port);
+        m_Socket.Options.Linger = TimeSpan.Zero;
+        m_Socket.Connect($"udp://{host}:{port}");
     }
 
     static readonly JsonSerializerOptions m_JsonOptions = new()
@@ -34,11 +35,11 @@ class OverlayWriter : IDisposable
             } : null
         };
         var json = JsonSerializer.Serialize(payload, m_JsonOptions);
-        m_Client.Send(Encoding.UTF8.GetBytes(json));
+        m_Socket.TrySend("overlay", json);
     }
 
     public void Dispose()
     {
-        m_Client.Dispose();
+        m_Socket.Dispose();
     }
 }

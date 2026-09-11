@@ -1,13 +1,10 @@
 using GroundCon;
 using LockPilot.Shared;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
 
 var settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
 
 using var overlayToken = new CancellationTokenSource();
-using var overlayClient = new UdpClient(new IPEndPoint(IPAddress.Any, settings.OverlayPort));
+using var overlayReader = new OverlayReader(settings.OverlayPort);
 using var commandClient = new CommandClient(settings.LockPilot.Host, settings.LockPilot.CommandPort);
 
 Console.WriteLine($"Overlay JSON on UDP {settings.OverlayPort}");
@@ -57,8 +54,7 @@ async Task ReceiveOverlay()
     {
         try
         {
-            var result = await overlayClient.ReceiveAsync(overlayToken.Token);
-            var text = Encoding.UTF8.GetString(result.Buffer);
+            var text = await overlayReader.ReceiveAsync(overlayToken.Token);
             Console.Write("\r" + text.PadRight(Math.Max(textLength, text.Length)));
             textLength = text.Length;
         }

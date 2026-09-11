@@ -1,14 +1,14 @@
 # LockPilot
 
-A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP (same pipeline as [video-link](https://github.com/inertial-dynamics/video-link)); tracking reads a parallel BGR `appsink` and sends state plus the detection box as JSON over UDP so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
+A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP (same pipeline as [video-link](https://github.com/inertial-dynamics/video-link)); tracking reads a parallel BGR `appsink` and sends state plus the detection box as JSON over NetMQ UDP so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
 
-LockPilot has no keyboard input. The companion console app **GroundCon** sends capture/reset/quit over TCP and prints overlay JSON received on UDP.
+LockPilot has no keyboard input. The companion console app **GroundCon** sends capture/reset/quit over TCP and prints overlay JSON received on NetMQ UDP.
 
 ## Run
 
 You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
 
-On Windows the official GStreamer MSVC x86_64 runtime must be installed. Start LockPilot, then GroundCon. RTP and overlay go to `GroundStation.Host`; RTP uses `GroundStation.RtpPort`, overlay JSON uses `GroundStation.OverlayPort`. LockPilot listens for TCP commands on `CommandPort`. GroundCon connects to `LockPilot.Host`:`LockPilot.CommandPort` and binds `OverlayPort` for overlay UDP.
+On Windows the official GStreamer MSVC x86_64 runtime must be installed. Start LockPilot, then GroundCon. RTP and overlay go to `GroundStation.Host`; RTP uses `GroundStation.RtpPort`, overlay JSON uses `GroundStation.OverlayPort`. LockPilot listens for TCP commands on `CommandPort`. GroundCon connects to `LockPilot.Host`:`LockPilot.CommandPort` and binds `OverlayPort` for overlay NetMQ UDP.
 
 ## How it works
 
@@ -20,7 +20,7 @@ On Windows the official GStreamer MSVC x86_64 runtime must be installed. Start L
 4. Every `RelocalizeIntervalSeconds` (and immediately if LK loses its points), YOLO searches again for an object of **the same class**, closest to the last box. On success, LK points are re-initialized in the new box.
 5. If both LK and YOLO fail — state **Lost**. Space again starts a new lock.
 
-The current state is sent each frame as a JSON UDP datagram. The detection box is included only while tracking, for example `{"State":"Tracking","Rect":{"X":10,"Y":20,"Width":160,"Height":120}}`. GroundCon prints each datagram to the console.
+The current state is sent each frame as a JSON NetMQ UDP message. The detection box is included only while tracking, for example `{"State":"Tracking","Rect":{"X":10,"Y":20,"Width":160,"Height":120}}`. GroundCon prints each message to the console.
 
 ## Controls
 
@@ -50,13 +50,13 @@ Keys are read by GroundCon and sent to LockPilot as NetMQ messages, for example 
 | `Yolo.IoU`                   | `0.45`           | NMS threshold (overlap of boxes of the same class).
 | `GroundStation.Host`         | `127.0.0.1`      | Destination host for RTP and overlay JSON.
 | `GroundStation.RtpPort`      | `5000`           | RTP destination UDP port.
-| `GroundStation.OverlayPort`  | `5001`           | Overlay JSON destination UDP port.
+| `GroundStation.OverlayPort`  | `5001`           | Overlay JSON destination NetMQ UDP port.
 
 [`GroundCon/appsettings.json`](GroundCon/appsettings.json) is copied next to the GroundCon exe.
 
 | Setting                | Default Value    | Meaning
 |------------------------|------------------|--------
-| `OverlayPort`          | `5001`           | Local UDP port GroundCon listens on for overlay JSON.
+| `OverlayPort`          | `5001`           | Local NetMQ UDP port GroundCon listens on for overlay JSON.
 | `LockPilot.Host`       | `127.0.0.1`      | LockPilot address for the TCP command connection.
 | `LockPilot.CommandPort`| `5002`           | LockPilot TCP command port.
 
@@ -68,13 +68,13 @@ On the receiver, use the sibling [video-link](https://github.com/inertial-dynami
 
 ## Overlay JSON
 
-Each processed frame sends one UTF-8 JSON datagram to `GroundStation.Host`:`GroundStation.OverlayPort`:
+Each processed frame RADIO-s one UTF-8 JSON message over NetMQ UDP to `GroundStation.Host`:`GroundStation.OverlayPort`. GroundCon DISH-es on `OverlayPort` and joins the `overlay` group:
 
 ```json
 {"State":"Tracking","Rect":{"X":10,"Y":20,"Width":160,"Height":120}}
 ```
 
-`State` is `Idle`, `Tracking`, or `Lost`. `Rect` is the box in camera pixels while tracking; otherwise it is `null`. GroundCon binds `OverlayPort` and writes each datagram to the console.
+`State` is `Idle`, `Tracking`, or `Lost`. `Rect` is the box in camera pixels while tracking; otherwise it is `null`. GroundCon writes each message to the console.
 
 ## TCP commands
 
