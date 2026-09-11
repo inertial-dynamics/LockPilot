@@ -23,7 +23,7 @@ if (!capture.IsOpened)
 }
 
 using var tracker = new TargetTracker(settings);
-using var overlayWriter = new UdpJsonWriter(settings.GroundStation.Host, settings.GroundStation.OverlayPort);
+using var overlayWriter = new OverlayWriter(settings.GroundStation.Host, settings.GroundStation.OverlayPort);
 using var image = new Mat();
 
 Console.WriteLine($"RTP H.264 to {settings.GroundStation.Host}:{settings.GroundStation.RtpPort}");

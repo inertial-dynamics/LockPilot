@@ -6,11 +6,11 @@ using LockPilot.Tracking;
 
 namespace LockPilot;
 
-class UdpJsonWriter : IDisposable
+class OverlayWriter : IDisposable
 {
     readonly UdpClient m_Client = new();
 
-    public UdpJsonWriter(string host, int port)
+    public OverlayWriter(string host, int port)
     {
         m_Client.Connect(host, port);
     }
