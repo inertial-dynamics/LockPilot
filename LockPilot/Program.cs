@@ -1,5 +1,6 @@
 ﻿using LockPilot;
 using LockPilot.GStreamer;
+using LockPilot.Shared;
 using LockPilot.Tracking;
 using OpenCvSharp;
 
@@ -24,11 +25,12 @@ if (!capture.IsOpened)
 
 using var tracker = new TargetTracker(settings);
 using var overlayWriter = new OverlayWriter(settings.GroundStation.Host, settings.GroundStation.OverlayPort);
+using var commandServer = new CommandServer(settings.CommandPort);
 using var image = new Mat();
 
 Console.WriteLine($"RTP H.264 to {settings.GroundStation.Host}:{settings.GroundStation.RtpPort}");
 Console.WriteLine($"Overlay JSON to {settings.GroundStation.Host}:{settings.GroundStation.OverlayPort}");
-Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
+Console.WriteLine($"Commands TCP on {settings.CommandPort}");
 while (true)
 {
     Thread.Sleep(1);
@@ -42,29 +44,27 @@ while (true)
     tracker.Update(image);
     overlayWriter.Write(tracker);
 
-    var key = ReadKey();
-    if (key is (int)ConsoleKey.Escape or 'q' or 'Q')
+    var quit = false;
+    while (commandServer.TryDequeue(out var command))
+    {
+        if (command == Command.Quit)
+        {
+            quit = true;
+            break;
+        }
+        if (command == Command.Reset)
+        {
+            tracker.Reset();
+            continue;
+        }
+        if (command == Command.Capture)
+        {
+            var aimRect = Geometry.GetCenterRect(image.Width, image.Height, settings.AimWidth, settings.AimHeight);
+            tracker.Capture(image, aimRect);
+        }
+    }
+    if (quit)
     {
         break;
     }
-    if (key is 'r' or 'R')
-    {
-        tracker.Reset();
-        continue;
-    }
-    if (key == ' ')
-    {
-        var aimRect = Geometry.GetCenterRect(image.Width, image.Height, settings.AimWidth, settings.AimHeight);
-        tracker.Capture(image, aimRect);
-    }
-}
-
-static int ReadKey()
-{
-    if (!Console.KeyAvailable)
-    {
-        return -1;
-    }
-    var keyInfo = Console.ReadKey(true);
-    return keyInfo.Key == ConsoleKey.Escape ? (int)ConsoleKey.Escape : keyInfo.KeyChar;
 }
