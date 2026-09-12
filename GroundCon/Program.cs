@@ -55,7 +55,7 @@ async Task ReceiveOverlay()
         try
         {
             var text = await overlayReader.ReceiveAsync(overlayToken.Token);
-            Console.Write("\r" + text.PadRight(Math.Max(textLength, text.Length)));
+            Console.Write($"\r{DateTime.Now:HH:mm:ss} => {text.PadRight(Math.Max(textLength, text.Length))}");
             textLength = text.Length;
         }
         catch (OperationCanceledException)
