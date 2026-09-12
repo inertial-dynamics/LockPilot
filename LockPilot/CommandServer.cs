@@ -23,6 +23,5 @@ class CommandServer : IDisposable
     public void Dispose()
     {
         m_Socket.Dispose();
-        NetMQConfig.Cleanup();
     }
 }
