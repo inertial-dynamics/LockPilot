@@ -1,3 +1,4 @@
+using LockPilot.Shared;
 using OpenCvSharp;
 using System.Diagnostics;
 
