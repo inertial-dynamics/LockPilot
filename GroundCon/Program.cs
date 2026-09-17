@@ -10,7 +10,7 @@ try
     using var overlayReader = new OverlayReader(settings.OverlayPort);
     using var commandClient = new CommandClient(settings.LockPilot.Host, settings.LockPilot.CommandPort);
 
-    Console.WriteLine($"Overlay JSON on UDP {settings.OverlayPort}");
+    Console.WriteLine($"Overlay MessagePack on UDP {settings.OverlayPort}");
     Console.WriteLine($"Commands TCP to {settings.LockPilot.Host}:{settings.LockPilot.CommandPort}");
     Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 
@@ -46,7 +46,7 @@ try
         {
             try
             {
-                var text = await overlayReader.ReceiveAsync(overlayToken.Token);
+                var text = (await overlayReader.ReceiveAsync(overlayToken.Token)).ToString();
                 Console.Write($"\r{DateTime.Now:HH:mm:ss} => {text.PadRight(Math.Max(textLength, text.Length))}");
                 textLength = text.Length;
             }

@@ -1,3 +1,4 @@
+using LockPilot.Shared;
 using NetMQ;
 using NetMQ.Sockets;
 
@@ -14,10 +15,10 @@ class OverlayReader : IDisposable
         m_Socket.Bind($"udp://*:{port}");
     }
 
-    public async Task<string> ReceiveAsync(CancellationToken cancellationToken)
+    public async Task<OverlayMessage> ReceiveAsync(CancellationToken cancellationToken)
     {
-        var (_, json) = await m_Socket.ReceiveStringAsync(cancellationToken);
-        return json;
+        var (_, bytes) = await m_Socket.ReceiveBytesAsync(cancellationToken);
+        return OverlayMessage.Deserialize(bytes);
     }
 
     public void Dispose()
