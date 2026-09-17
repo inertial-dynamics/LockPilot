@@ -1,8 +1,7 @@
+using LockPilot.Shared;
 using LockPilot.Tracking;
 using NetMQ;
 using NetMQ.Sockets;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace LockPilot;
 
@@ -16,26 +15,20 @@ class OverlayWriter : IDisposable
         m_Socket.Connect($"udp://{host}:{port}");
     }
 
-    static readonly JsonSerializerOptions m_JsonOptions = new()
-    {
-        Converters = { new JsonStringEnumConverter() }
-    };
-
     public void Write(TargetTracker tracker)
     {
-        var payload = new
+        var payload = new OverlayMessage
         {
-            tracker.State,
-            Rect = tracker.State == TargetTrackerState.Tracking ? new
+            State = tracker.State,
+            Rect = tracker.State == TargetTrackerState.Tracking ? new OverlayRect
             {
-                tracker.DetectionRect.X,
-                tracker.DetectionRect.Y,
-                tracker.DetectionRect.Width,
-                tracker.DetectionRect.Height
+                X = tracker.DetectionRect.X,
+                Y = tracker.DetectionRect.Y,
+                Width = tracker.DetectionRect.Width,
+                Height = tracker.DetectionRect.Height
             } : null
         };
-        var json = JsonSerializer.Serialize(payload, m_JsonOptions);
-        m_Socket.TrySend("overlay", json);
+        m_Socket.TrySend("overlay", OverlayMessage.Serialize(payload));
     }
 
     public void Dispose()

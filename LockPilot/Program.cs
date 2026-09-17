@@ -32,7 +32,7 @@ try
     using var image = new Mat();
 
     Console.WriteLine($"RTP H.264 to {settings.GroundStation.Host}:{settings.GroundStation.RtpPort}");
-    Console.WriteLine($"Overlay JSON to {settings.GroundStation.Host}:{settings.GroundStation.OverlayPort}");
+    Console.WriteLine($"Overlay MessagePack to {settings.GroundStation.Host}:{settings.GroundStation.OverlayPort}");
     Console.WriteLine($"Commands TCP on {settings.CommandPort}");
     while (true)
     {

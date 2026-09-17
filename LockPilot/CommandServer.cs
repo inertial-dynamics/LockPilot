@@ -16,7 +16,7 @@ class CommandServer : IDisposable
 
     public bool TryDequeue(out Command? command)
     {
-        command = m_Socket.TryReceiveFrameString(out var json) ? CommandMessage.Deserialize(json) : null;
+        command = m_Socket.TryReceiveFrameBytes(out var bytes) ? CommandMessage.Deserialize(bytes) : null;
         return command != null;
     }
 
