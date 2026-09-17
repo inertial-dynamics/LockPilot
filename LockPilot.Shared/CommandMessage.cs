@@ -1,18 +1,14 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using MessagePack;
 
 namespace LockPilot.Shared;
 
+[MessagePackObject]
 public class CommandMessage
 {
+    [Key(0)]
     public Command Cmd { get; init; }
 
-    static readonly JsonSerializerOptions m_JsonOptions = new()
-    {
-        Converters = { new JsonStringEnumConverter() }
-    };
+    public static byte[] Serialize(Command command) => MessagePackSerializer.Serialize(new CommandMessage { Cmd = command });
 
-    public static string Serialize(Command command) => JsonSerializer.Serialize(new CommandMessage { Cmd = command }, m_JsonOptions);
-
-    public static Command Deserialize(string json) => JsonSerializer.Deserialize<CommandMessage>(json, m_JsonOptions).Cmd;
+    public static Command Deserialize(byte[] bytes) => MessagePackSerializer.Deserialize<CommandMessage>(bytes).Cmd;
 }
