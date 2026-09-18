@@ -6,5 +6,5 @@ namespace LockPilot.Shared;
 public class CommandMessage : IMessage
 {
     [Key(0)]
-    public Command Cmd { get; init; }
+    public Command Command { get; init; }
 }

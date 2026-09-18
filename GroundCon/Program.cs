@@ -29,7 +29,7 @@ try
             var command = ReadCommand();
             if (command != null)
             {
-                commandClient.Send(new CommandMessage { Cmd = command.Value });
+                commandClient.Send(new CommandMessage { Command = command.Value });
                 if (command == Command.Quit)
                 {
                     break;

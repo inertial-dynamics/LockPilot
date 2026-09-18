@@ -81,7 +81,7 @@ try
 
     bool HandleCommandMessage(CommandMessage commandMessage)
     {
-        switch (commandMessage.Cmd)
+        switch (commandMessage.Command)
         {
             case Command.Quit:
                 return true;
