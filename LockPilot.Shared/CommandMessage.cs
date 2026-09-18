@@ -3,12 +3,8 @@ using MessagePack;
 namespace LockPilot.Shared;
 
 [MessagePackObject]
-public class CommandMessage
+public class CommandMessage : IMessage
 {
     [Key(0)]
     public Command Cmd { get; init; }
-
-    public static byte[] Serialize(Command command) => MessagePackSerializer.Serialize(new CommandMessage { Cmd = command });
-
-    public static Command Deserialize(byte[] bytes) => MessagePackSerializer.Deserialize<CommandMessage>(bytes).Cmd;
 }
