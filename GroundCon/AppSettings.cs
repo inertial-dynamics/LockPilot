@@ -4,6 +4,10 @@ namespace GroundCon;
 
 class AppSettings
 {
+    public required int AimWidth { get; init; }
+
+    public required int AimHeight { get; init; }
+
     public required int OverlayPort { get; init; }
 
     public required LockPilotSettings LockPilot { get; init; }
