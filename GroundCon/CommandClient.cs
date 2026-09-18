@@ -14,7 +14,7 @@ class CommandClient : IDisposable
         m_Socket.Connect($"tcp://{host}:{port}");
     }
 
-    public void Send(Command command) => m_Socket.SendFrame(CommandMessage.Serialize(command));
+    public void Send(IMessage command) => m_Socket.SendFrame(IMessage.Serialize(command));
 
     public void Dispose()
     {

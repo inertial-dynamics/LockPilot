@@ -14,9 +14,9 @@ class CommandServer : IDisposable
         m_Socket.Bind($"tcp://*:{port}");
     }
 
-    public bool TryDequeue(out Command? command)
+    public bool TryDequeue(out IMessage command)
     {
-        command = m_Socket.TryReceiveFrameBytes(out var bytes) ? CommandMessage.Deserialize(bytes) : null;
+        command = m_Socket.TryReceiveFrameBytes(out var bytes) ? IMessage.Deserialize(bytes) : null;
         return command != null;
     }
 
