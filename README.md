@@ -24,7 +24,7 @@ The current state is sent each frame as a MessagePack NetMQ UDP message. The det
 
 ## Controls
 
-Keys are read by GroundCon and sent to LockPilot as NetMQ MessagePack frames (`Cmd`: `Capture`, `Reset`, or `Quit`).
+Keys are read by GroundCon and sent to LockPilot as NetMQ MessagePack frames (`CommandMessage` with `Command`: `Capture`, `Reset`, or `Quit`). On startup GroundCon also sends `SetupMessage` once with the reticle size.
 
 | Key       | Command   | Action
 |-----------|-----------|--------
@@ -39,8 +39,6 @@ Keys are read by GroundCon and sent to LockPilot as NetMQ MessagePack frames (`C
 | Setting                      | Default Value    | Meaning
 |------------------------------|------------------|--------
 | `CameraIndex`                | `0`              | Camera index for Windows `mfvideosrc` (`0` is usually the built-in camera). Unused on Linux.
-| `AimWidth`                   | `160`            | Reticle width in pixels.
-| `AimHeight`                  | `120`            | Reticle height in pixels.
 | `RelocalizeIntervalSeconds`  | `2.0`            | How often to run YOLO while LK still holds the target. On LK failure, relocalization runs immediately.
 | `MinLkPoints`                | `8`              | Minimum number of good LK points. Fewer than this means LK lost the frame.
 | `MaxLkError`                 | `20.0`           | Optical-flow matching error threshold. Points with a larger error are dropped.
@@ -57,6 +55,8 @@ Keys are read by GroundCon and sent to LockPilot as NetMQ MessagePack frames (`C
 | Setting                | Default Value    | Meaning
 |------------------------|------------------|--------
 | `OverlayPort`          | `5001`           | Local NetMQ UDP port GroundCon listens on for overlay MessagePack.
+| `AimWidth`             | `160`            | Reticle width in pixels, sent to LockPilot once via `SetupMessage`.
+| `AimHeight`            | `120`            | Reticle height in pixels, sent to LockPilot once via `SetupMessage`.
 | `LockPilot.Host`       | `127.0.0.1`      | LockPilot address for the TCP command connection.
 | `LockPilot.CommandPort`| `5002`           | LockPilot TCP command port.
 
@@ -72,6 +72,6 @@ Each processed frame RADIO-s one MessagePack message over NetMQ UDP to `GroundSt
 
 ## TCP commands
 
-The MessagePack command contract lives in the shared `LockPilot.Shared` library. GroundCon PUSH-es each command as a NetMQ frame whose payload is `CommandMessage` (`Cmd`: `Capture`, `Reset`, or `Quit`); LockPilot PULL-s on `CommandPort`.
+The MessagePack command contract lives in the shared `LockPilot.Shared` library. Commands implement `ICommand` and are serialized as a MessagePack union: `CommandMessage` (`Command`: `Capture`, `Reset`, or `Quit`) and `SetupMessage` (`AimWidth`, `AimHeight`). GroundCon PUSH-es each command as a NetMQ frame; `SetupMessage` is sent once at startup. LockPilot PULL-s on `CommandPort` and uses the last received aim size on `Capture` to build the reticle.
 
 NetMQ reconnects on its own. LockPilot keeps tracking whether GroundCon is connected or not.
