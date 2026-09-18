@@ -34,6 +34,9 @@ try
     Console.WriteLine($"RTP H.264 to {settings.GroundStation.Host}:{settings.GroundStation.RtpPort}");
     Console.WriteLine($"Overlay MessagePack to {settings.GroundStation.Host}:{settings.GroundStation.OverlayPort}");
     Console.WriteLine($"Commands TCP on {settings.CommandPort}");
+
+    var aimWidth = 0;
+    var aimHeight = 0;
     while (true)
     {
         Thread.Sleep(1);
@@ -48,28 +51,49 @@ try
         overlayWriter.Write(tracker);
 
         var quit = false;
-        while (commandServer.TryDequeue(out var command))
+        while (commandServer.TryDequeue(out var message))
         {
-            if (command == Command.Quit)
+            if (message is SetupMessage setupMessage)
             {
-                quit = true;
-                break;
-            }
-            if (command == Command.Reset)
-            {
-                tracker.Reset();
+                HandleSetupMessage(setupMessage);
                 continue;
             }
-            if (command == Command.Capture)
+            if (message is CommandMessage commandMessage)
             {
-                var aimRect = Geometry.GetCenterRect(image.Width, image.Height, settings.AimWidth, settings.AimHeight);
-                tracker.Capture(image, aimRect);
+                if (HandleCommandMessage(commandMessage))
+                {
+                    quit = true;
+                    break;
+                }
             }
         }
         if (quit)
         {
             break;
         }
+    }
+
+    void HandleSetupMessage(SetupMessage setupMessage)
+    {
+        aimWidth = setupMessage.AimWidth;
+        aimHeight = setupMessage.AimHeight;
+    }
+
+    bool HandleCommandMessage(CommandMessage commandMessage)
+    {
+        switch (commandMessage.Cmd)
+        {
+            case Command.Quit:
+                return true;
+            case Command.Reset:
+                tracker.Reset();
+                break;
+            case Command.Capture:
+                var aimRect = Geometry.GetCenterRect(image.Width, image.Height, aimWidth, aimHeight);
+                tracker.Capture(image, aimRect);
+                break;
+        }
+        return false;
     }
 }
 finally
