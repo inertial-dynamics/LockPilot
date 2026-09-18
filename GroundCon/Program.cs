@@ -14,6 +14,12 @@ try
     Console.WriteLine($"Commands TCP to {settings.LockPilot.Host}:{settings.LockPilot.CommandPort}");
     Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
 
+    commandClient.Send(new SetupMessage
+    {
+        AimWidth = settings.AimWidth,
+        AimHeight = settings.AimHeight
+    });
+
     var overlayTask = Task.Run(ReceiveOverlay);
 
     while (true)
@@ -23,7 +29,7 @@ try
             var command = ReadCommand();
             if (command != null)
             {
-                commandClient.Send(command.Value);
+                commandClient.Send(new CommandMessage { Cmd = command.Value });
                 if (command == Command.Quit)
                 {
                     break;
