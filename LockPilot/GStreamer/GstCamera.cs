@@ -42,12 +42,7 @@ class GstCamera : IDisposable
             return;
         }
         m_Pipeline = pipeline;
-        if (pipeline.GetByName("sink") is not AppSink appSink)
-        {
-            Error = "GStreamer appsink not found";
-            return;
-        }
-        m_AppSink = appSink;
+        m_AppSink = (AppSink)pipeline.GetByName("sink");
         if (pipeline.SetState(State.Playing) == StateChangeReturn.Failure)
         {
             Error = "Failed to start GStreamer pipeline";
