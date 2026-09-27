@@ -10,6 +10,8 @@ class AppSettings
 
     public required int OverlayPort { get; init; }
 
+    public required int RtpPort { get; init; }
+
     public required LockPilotSettings LockPilot { get; init; }
 
     public static AppSettings Load(string path) => JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path));
