@@ -15,7 +15,7 @@ class OverlayReader : IDisposable
         m_Socket.Bind($"udp://*:{port}");
     }
 
-    public async Task<OverlayMessage> ReceiveAsync(CancellationToken cancellationToken)
+    public async Task<OverlayMessage> Read(CancellationToken cancellationToken)
     {
         var (_, bytes) = await m_Socket.ReceiveBytesAsync(cancellationToken);
         return OverlayMessage.Deserialize(bytes);
