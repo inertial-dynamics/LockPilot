@@ -77,10 +77,12 @@ try
     {
         aimWidth = setupMessage.AimWidth;
         aimHeight = setupMessage.AimHeight;
+        Console.WriteLine($"Setup aim {aimWidth}x{aimHeight}");
     }
 
     bool HandleCommandMessage(CommandMessage commandMessage)
     {
+        Console.WriteLine($"Command {commandMessage.Command}");
         switch (commandMessage.Command)
         {
             case Command.Quit:
@@ -90,6 +92,7 @@ try
                 break;
             case Command.Capture:
                 var aimRect = Geometry.GetCenterRect(image.Width, image.Height, aimWidth, aimHeight);
+                Console.WriteLine($"Capture aim {aimRect.X},{aimRect.Y} {aimRect.Width}x{aimRect.Height}");
                 tracker.Capture(image, aimRect);
                 break;
         }
