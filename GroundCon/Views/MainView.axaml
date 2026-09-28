@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="GroundCon.Views.MainView"
+        Title="GroundCon" MinWidth="800" MinHeight="600" WindowStartupLocation="CenterScreen" FontSize="20">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Margin="10" Spacing="10">
+            <Button Name="Capture" Content="Capture" Classes="command" />
+            <Button Name="Reset" Content="Reset" Classes="command" />
+            <Button Name="Quit" Content="Quit" Classes="command" />
+        </StackPanel>
+        <Grid Background="Black">
+            <Image Name="Video" Source="{Binding Path=FrameBitmap}" SizeChanged="OnVideoSizeChanged" />
+            <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+                <LayoutTransformControl.LayoutTransform>
+                    <ScaleTransform ScaleX="{Binding Path=FitScale}" ScaleY="{Binding Path=FitScale}" />
+                </LayoutTransformControl.LayoutTransform>
+                <Canvas Width="{Binding Path=FrameWidth}" Height="{Binding Path=FrameHeight}">
+                    <Rectangle Canvas.Left="{Binding Path=AimLeft}" Canvas.Top="{Binding Path=AimTop}" Width="{Binding Path=AimWidth}" Height="{Binding Path=AimHeight}" Stroke="White"
+                               StrokeThickness="{Binding Path=OverlayStrokeThickness}" />
+                    <Rectangle Canvas.Left="{Binding Path=OverlayRect.X}" Canvas.Top="{Binding Path=OverlayRect.Y}" Width="{Binding Path=OverlayRect.Width}" Height="{Binding Path=OverlayRect.Height}"
+                               Stroke="Lime" StrokeThickness="{Binding Path=OverlayStrokeThickness}" IsVisible="{Binding Path=IsTracking}" />
+                </Canvas>
+            </LayoutTransformControl>
+            <TextBlock Margin="10" Text="{Binding Path=TrackerState}" Foreground="{Binding Path=TrackerStateBrush}" />
+        </Grid>
+    </DockPanel>
+</Window>
