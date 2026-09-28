@@ -1,81 +1,36 @@
-using GroundCon;
-using LockPilot.Shared;
+using Avalonia;
+using GroundCon.GStreamer;
 using NetMQ;
 
-var settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, "appsettings.json"));
+namespace GroundCon;
 
-try
+static class Program
 {
-    using var overlayToken = new CancellationTokenSource();
-    using var overlayReader = new OverlayReader(settings.OverlayPort);
-    using var commandClient = new CommandClient(settings.LockPilot.Host, settings.LockPilot.CommandPort);
-
-    Console.WriteLine($"Overlay MessagePack on UDP {settings.OverlayPort}");
-    Console.WriteLine($"Commands TCP to {settings.LockPilot.Host}:{settings.LockPilot.CommandPort}");
-    Console.WriteLine("Controls: Space = capture/re-acquire, R = reset, Esc/Q = quit");
-
-    commandClient.Send(new SetupMessage
+    [STAThread]
+    static void Main(string[] args)
     {
-        AimWidth = settings.AimWidth,
-        AimHeight = settings.AimHeight
-    });
-
-    var overlayTask = Task.Run(ReceiveOverlay);
-
-    while (true)
-    {
-        if (Console.KeyAvailable)
+        try
         {
-            var command = ReadCommand();
-            if (command != null)
-            {
-                commandClient.Send(new CommandMessage { Command = command.Value });
-                if (command == Command.Quit)
-                {
-                    break;
-                }
-            }
+            GstRuntime.Initialize();
         }
-        else
+        catch (Exception ex)
         {
-            Thread.Sleep(1);
+            Console.WriteLine($"Cannot initialize GStreamer: {ex.Message}");
+            return;
+        }
+
+        try
+        {
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        finally
+        {
+            NetMQConfig.Cleanup();
         }
     }
 
-    overlayToken.Cancel();
-    overlayTask.Wait();
-
-    async Task ReceiveOverlay()
-    {
-        var textLength = 0;
-        while (!overlayToken.IsCancellationRequested)
-        {
-            try
-            {
-                var text = (await overlayReader.ReceiveAsync(overlayToken.Token)).ToString();
-                Console.Write($"\r{DateTime.Now:HH:mm:ss} => {text.PadRight(Math.Max(textLength, text.Length))}");
-                textLength = text.Length;
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-        }
-    }
-}
-finally
-{
-    NetMQConfig.Cleanup();
-}
-
-static Command? ReadCommand()
-{
-    var keyInfo = Console.ReadKey(true);
-    return char.ToLower(keyInfo.KeyChar) switch
-    {
-        'q' => Command.Quit,
-        'r' => Command.Reset,
-        ' ' => Command.Capture,
-        _ => keyInfo.Key == ConsoleKey.Escape ? Command.Quit : null
-    };
+    private static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont();
 }
