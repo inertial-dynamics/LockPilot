@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="GstSharp.Net.App" Version="1.28.9" />
     <PackageReference Include="NetMQ" Version="4.0.4.3" />
   </ItemGroup>
 
