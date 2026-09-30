@@ -20,10 +20,4 @@ public class OverlayMessage
     public static byte[] Serialize(OverlayMessage message) => MessagePackSerializer.Serialize(message);
 
     public static OverlayMessage Deserialize(byte[] bytes) => MessagePackSerializer.Deserialize<OverlayMessage>(bytes);
-
-    public override string ToString()
-    {
-        var label = ClassName != null ? $"{ClassName} {Confidence:p0}" : null;
-        return Rect != null ? $"{State} {label} {Rect.X},{Rect.Y} {Rect.Width}x{Rect.Height}" : $"{State}";
-    }
 }
