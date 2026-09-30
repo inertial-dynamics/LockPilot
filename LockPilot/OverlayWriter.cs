@@ -29,11 +29,13 @@ class OverlayWriter : IDisposable
                     Height = tracker.DetectionRect.Height
                 },
                 ClassName = tracker.ClassName,
-                Confidence = tracker.Confidence
+                Confidence = tracker.Confidence,
+                YoloElapsedMilliseconds = tracker.YoloElapsedMilliseconds
             } :
             new OverlayMessage
             {
-                State = tracker.State
+                State = tracker.State,
+                YoloElapsedMilliseconds = tracker.YoloElapsedMilliseconds
             };
         m_Socket.TrySend("overlay", OverlayMessage.Serialize(payload));
     }

@@ -50,6 +50,8 @@ class TargetTracker(AppSettings settings) : IDisposable
 
     public float Confidence => m_Relocalizer.Confidence;
 
+    public int? YoloElapsedMilliseconds => m_Relocalizer.ElapsedMilliseconds;
+
     public void Update(Mat image)
     {
         if (State == TargetTrackerState.Idle)

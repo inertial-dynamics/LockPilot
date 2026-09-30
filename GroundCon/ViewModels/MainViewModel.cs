@@ -157,6 +157,22 @@ sealed class MainViewModel : Screen, IDisposable
 
     public bool HasTargetLabel => TargetLabel != null;
 
+    string m_YoloElapsedLabel;
+
+    public string YoloElapsedLabel
+    {
+        get => m_YoloElapsedLabel;
+        private set
+        {
+            if (Set(ref m_YoloElapsedLabel, value))
+            {
+                NotifyOfPropertyChange(nameof(HasYoloElapsedLabel));
+            }
+        }
+    }
+
+    public bool HasYoloElapsedLabel => YoloElapsedLabel != null;
+
     Size m_VideoSize;
 
     public void OnVideoSizeChanged(Size size)
@@ -229,6 +245,7 @@ sealed class MainViewModel : Screen, IDisposable
                     TrackerState = message.State;
                     OverlayRect = message.Rect;
                     TargetLabel = message.ClassName != null ? $"{message.ClassName} {message.Confidence:p0}" : null;
+                    YoloElapsedLabel = message.YoloElapsedMilliseconds != null ? $"Reloc: {message.YoloElapsedMilliseconds} ms" : null;
                 });
             }
             catch (OperationCanceledException)

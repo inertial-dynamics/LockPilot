@@ -17,6 +17,9 @@ public class OverlayMessage
     [Key(3)]
     public float Confidence { get; init; }
 
+    [Key(4)]
+    public int? YoloElapsedMilliseconds { get; init; }
+
     public static byte[] Serialize(OverlayMessage message) => MessagePackSerializer.Serialize(message);
 
     public static OverlayMessage Deserialize(byte[] bytes) => MessagePackSerializer.Deserialize<OverlayMessage>(bytes);

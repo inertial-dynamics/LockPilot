@@ -29,6 +29,8 @@ class YoloRelocalizer : IDisposable
 
     public float Confidence { get; private set; }
 
+    public int? ElapsedMilliseconds { get; private set; }
+
     public void LockOn(Mat image, Rect aimRect)
     {
         ClassName = null;
@@ -98,6 +100,7 @@ class YoloRelocalizer : IDisposable
     {
         ClassName = null;
         Confidence = 0;
+        ElapsedMilliseconds = null;
     }
 
     public void Dispose() => m_Predictor.Dispose();
@@ -108,7 +111,16 @@ class YoloRelocalizer : IDisposable
         Confidence = detection.Confidence;
     }
 
-    private IEnumerable<Detection> Detect(Mat image) => Cv2.ImEncode(".bmp", image, out var buffer) ? m_Predictor.Detect(buffer) : [];
+    private IEnumerable<Detection> Detect(Mat image)
+    {
+        if (Cv2.ImEncode(".bmp", image, out var buffer))
+        {
+            var result = m_Predictor.Detect(buffer);
+            ElapsedMilliseconds = (int)Math.Round((result.Speed.Preprocess + result.Speed.Inference + result.Speed.Postprocess).TotalMilliseconds);
+            return result;
+        }
+        return [];
+    }
 
     private static Rect ToRect(Detection detection) => new(detection.Bounds.X, detection.Bounds.Y, detection.Bounds.Width, detection.Bounds.Height);
 

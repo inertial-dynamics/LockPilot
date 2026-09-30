@@ -23,6 +23,7 @@
             </LayoutTransformControl>
             <StackPanel Margin="10" HorizontalAlignment="Left">
                 <TextBlock Text="{Binding Path=TrackerState}" Foreground="{Binding Path=TrackerStateBrush}" />
+                <TextBlock Text="{Binding Path=YoloElapsedLabel}" Foreground="{Binding Path=TrackerStateBrush}" IsVisible="{Binding Path=HasYoloElapsedLabel}" />
             </StackPanel>
             <StackPanel Margin="10" HorizontalAlignment="Right">
                 <TextBlock Text="{Binding Path=TargetLabel}" Foreground="Lime" IsVisible="{Binding Path=HasTargetLabel}" />
