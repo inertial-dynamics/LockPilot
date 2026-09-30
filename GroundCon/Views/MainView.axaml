@@ -22,6 +22,7 @@
                 </Canvas>
             </LayoutTransformControl>
             <StackPanel Margin="10" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding Path=FpsLabel}" Foreground="LightGray" />
                 <TextBlock Text="{Binding Path=TrackerState}" Foreground="{Binding Path=TrackerStateBrush}" />
                 <TextBlock Text="{Binding Path=YoloElapsedLabel}" Foreground="{Binding Path=TrackerStateBrush}" IsVisible="{Binding Path=HasYoloElapsedLabel}" />
             </StackPanel>

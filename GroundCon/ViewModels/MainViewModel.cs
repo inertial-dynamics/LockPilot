@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using GroundCon.GStreamer;
 using GroundCon.Views;
 using LockPilot.Shared;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Screen = Caliburn.Micro.Screen;
 
@@ -157,6 +158,14 @@ sealed class MainViewModel : Screen, IDisposable
 
     public bool HasTargetLabel => TargetLabel != null;
 
+    string m_FpsLabel;
+
+    public string FpsLabel
+    {
+        get => m_FpsLabel;
+        private set => Set(ref m_FpsLabel, value);
+    }
+
     string m_YoloElapsedLabel;
 
     public string YoloElapsedLabel
@@ -284,6 +293,9 @@ sealed class MainViewModel : Screen, IDisposable
         }
     }
 
+    int m_FpsFrameCount;
+    readonly Stopwatch m_FpsWatch = Stopwatch.StartNew();
+
     private void ApplyFrame()
     {
         lock (m_FrameLock)
@@ -311,6 +323,15 @@ sealed class MainViewModel : Screen, IDisposable
                 }
             }
             m_FramePosted = false;
+        }
+
+        m_FpsFrameCount++;
+        var elapsedSeconds = m_FpsWatch.Elapsed.TotalSeconds;
+        if (elapsedSeconds >= 1)
+        {
+            FpsLabel = $"FPS: {m_FpsFrameCount / elapsedSeconds:0}";
+            m_FpsFrameCount = 0;
+            m_FpsWatch.Restart();
         }
 
         m_View?.InvalidateVideo();
