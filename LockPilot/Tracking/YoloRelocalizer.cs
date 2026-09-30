@@ -25,11 +25,14 @@ class YoloRelocalizer : IDisposable
         });
     }
 
-    int? m_ClassId;
+    public string ClassName { get; private set; }
+
+    public float Confidence { get; private set; }
 
     public void LockOn(Mat image, Rect aimRect)
-                                                                        {
-        m_ClassId = null;
+    {
+        ClassName = null;
+        Confidence = 0;
 
         var aimCenter = Center(aimRect);
         Detection bestDetection = null;
@@ -50,14 +53,14 @@ class YoloRelocalizer : IDisposable
 
         if (bestDetection != null)
         {
-            m_ClassId = bestDetection.Name.Id;
+            Keep(bestDetection);
         }
     }
 
     public bool Locate(Mat image, Rect hintRect, out Rect box)
     {
         box = new();
-        if (m_ClassId == null || hintRect.Width <= 0 || hintRect.Height <= 0)
+        if (ClassName == null || hintRect.Width <= 0 || hintRect.Height <= 0)
         {
             return false;
         }
@@ -67,7 +70,7 @@ class YoloRelocalizer : IDisposable
         var bestDistance = double.MaxValue;
         foreach (var detection in Detect(image))
         {
-            if (detection.Name.Id == m_ClassId.Value)
+            if (detection.Name.Name == ClassName)
             {
                 var detectionCenter = Center(detection);
                 var distance = detectionCenter.DistanceTo(hintCenter);
@@ -82,14 +85,28 @@ class YoloRelocalizer : IDisposable
         if (bestDetection != null)
         {
             box = ToRect(bestDetection);
-            return box.Width > 0 && box.Height > 0;
+            if (box.Width > 0 && box.Height > 0)
+            {
+                Keep(bestDetection);
+                return true;
+            }
         }
         return false;
     }
 
-    public void Reset() => m_ClassId = null;
+    public void Reset()
+    {
+        ClassName = null;
+        Confidence = 0;
+    }
 
     public void Dispose() => m_Predictor.Dispose();
+
+    private void Keep(Detection detection)
+    {
+        ClassName = detection.Name.Name;
+        Confidence = detection.Confidence;
+    }
 
     private IEnumerable<Detection> Detect(Mat image) => Cv2.ImEncode(".bmp", image, out var buffer) ? m_Predictor.Detect(buffer) : [];
 

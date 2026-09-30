@@ -21,7 +21,8 @@
                                Stroke="Lime" StrokeThickness="{Binding Path=OverlayStrokeThickness}" IsVisible="{Binding Path=IsTracking}" />
                 </Canvas>
             </LayoutTransformControl>
-            <TextBlock Margin="10" Text="{Binding Path=TrackerState}" Foreground="{Binding Path=TrackerStateBrush}" />
+            <TextBlock Margin="10" HorizontalAlignment="Left" Text="{Binding Path=TrackerState}" Foreground="{Binding Path=TrackerStateBrush}" />
+            <TextBlock Margin="10" HorizontalAlignment="Right" Text="{Binding Path=TargetLabel}" Foreground="Lime" IsVisible="{Binding Path=HasTargetLabel}" />
         </Grid>
     </DockPanel>
 </Window>

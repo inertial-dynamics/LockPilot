@@ -141,6 +141,22 @@ sealed class MainViewModel : Screen, IDisposable
         private set => Set(ref m_OverlayRect, value);
     }
 
+    string m_TargetLabel;
+
+    public string TargetLabel
+    {
+        get => m_TargetLabel;
+        private set
+        {
+            if (Set(ref m_TargetLabel, value))
+            {
+                NotifyOfPropertyChange(nameof(HasTargetLabel));
+            }
+        }
+    }
+
+    public bool HasTargetLabel => TargetLabel != null;
+
     Size m_VideoSize;
 
     public void OnVideoSizeChanged(Size size)
@@ -212,6 +228,7 @@ sealed class MainViewModel : Screen, IDisposable
                 {
                     TrackerState = message.State;
                     OverlayRect = message.Rect;
+                    TargetLabel = message.ClassName != null ? $"{message.ClassName} {message.Confidence:p0}" : null;
                 });
             }
             catch (OperationCanceledException)

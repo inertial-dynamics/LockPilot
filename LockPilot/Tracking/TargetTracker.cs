@@ -46,6 +46,10 @@ class TargetTracker(AppSettings settings) : IDisposable
 
     public Rect DetectionRect { get; private set; }
 
+    public string ClassName => m_Relocalizer.ClassName;
+
+    public float Confidence => m_Relocalizer.Confidence;
+
     public void Update(Mat image)
     {
         if (State == TargetTrackerState.Idle)

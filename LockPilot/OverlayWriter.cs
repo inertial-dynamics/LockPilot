@@ -17,17 +17,24 @@ class OverlayWriter : IDisposable
 
     public void Write(TargetTracker tracker)
     {
-        var payload = new OverlayMessage
-        {
-            State = tracker.State,
-            Rect = tracker.State == TargetTrackerState.Tracking ? new OverlayRect
+        var payload = tracker.State == TargetTrackerState.Tracking ?
+            new OverlayMessage
             {
-                X = tracker.DetectionRect.X,
-                Y = tracker.DetectionRect.Y,
-                Width = tracker.DetectionRect.Width,
-                Height = tracker.DetectionRect.Height
-            } : null
-        };
+                State = tracker.State,
+                Rect = new()
+                {
+                    X = tracker.DetectionRect.X,
+                    Y = tracker.DetectionRect.Y,
+                    Width = tracker.DetectionRect.Width,
+                    Height = tracker.DetectionRect.Height
+                },
+                ClassName = tracker.ClassName,
+                Confidence = tracker.Confidence
+            } :
+            new OverlayMessage
+            {
+                State = tracker.State
+            };
         m_Socket.TrySend("overlay", OverlayMessage.Serialize(payload));
     }
 
