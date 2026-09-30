@@ -113,13 +113,10 @@ class YoloRelocalizer : IDisposable
 
     private IEnumerable<Detection> Detect(Mat image)
     {
-        if (Cv2.ImEncode(".bmp", image, out var buffer))
-        {
-            var result = m_Predictor.Detect(buffer);
-            ElapsedMilliseconds = (int)Math.Round((result.Speed.Preprocess + result.Speed.Inference + result.Speed.Postprocess).TotalMilliseconds);
-            return result;
-        }
-        return [];
+        Cv2.ImEncode(".bmp", image, out var buffer);
+        var result = m_Predictor.Detect(buffer);
+        ElapsedMilliseconds = (int)Math.Round((result.Speed.Preprocess + result.Speed.Inference + result.Speed.Postprocess).TotalMilliseconds);
+        return result;
     }
 
     private static Rect ToRect(Detection detection) => new(detection.Bounds.X, detection.Bounds.Y, detection.Bounds.Width, detection.Bounds.Height);
