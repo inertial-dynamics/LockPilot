@@ -38,7 +38,6 @@ GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`
 
 | Setting                      | Default Value    | Meaning
 |------------------------------|------------------|--------
-| `CameraIndex`                | `0`              | Camera index for Windows `mfvideosrc` (`0` is usually the built-in camera). Unused on Linux.
 | `FrameRate`                  | `30`             | Camera frame rate (`framerate` caps on `libcamerasrc` and `mfvideosrc`).
 | `RelocalizeIntervalSeconds`  | `2.0`            | How often to run YOLO while LK still holds the target. On LK failure, relocalization runs immediately.
 | `MinLkPoints`                | `8`              | Minimum number of good LK points. Fewer than this means LK lost the frame.

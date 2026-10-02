@@ -4,8 +4,6 @@ namespace LockPilot;
 
 class AppSettings
 {
-    public required int CameraIndex { get; init; }
-
     public required int FrameRate { get; init; }
 
     public required double RelocalizeIntervalSeconds { get; init; }

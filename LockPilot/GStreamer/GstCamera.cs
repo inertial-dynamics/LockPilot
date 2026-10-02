@@ -29,7 +29,7 @@ class GstCamera : IDisposable
 
     private void OpenCore(AppSettings settings)
     {
-        var source = OperatingSystem.IsWindows() ? $"mfvideosrc device-index={settings.CameraIndex}" : "libcamerasrc";
+        var source = OperatingSystem.IsWindows() ? "mfvideosrc" : "libcamerasrc";
         var appSinkTail = "appsink name=sink drop=true max-buffers=1 sync=false";
         var encoder = OperatingSystem.IsWindows() ? "videoconvert ! video/x-raw,format=NV12 ! mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
         var rtpTail = $"{encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.GroundStation.Host} port={settings.GroundStation.RtpPort} sync=false";
