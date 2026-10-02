@@ -33,7 +33,7 @@ class GstCamera : IDisposable
         var appSinkTail = "appsink name=sink drop=true max-buffers=1 sync=false";
         var encoder = OperatingSystem.IsWindows() ? "videoconvert ! video/x-raw,format=NV12 ! mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
         var rtpTail = $"{encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.GroundStation.Host} port={settings.GroundStation.RtpPort} sync=false";
-        var description = $"{source} ! videoconvert n-threads=0 ! video/x-raw,format=GRAY8 ! tee name=t " +
+        var description = $"{source} ! video/x-raw,framerate={settings.FrameRate}/1 ! videoconvert n-threads=0 ! video/x-raw,format=GRAY8 ! tee name=t " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=2 ! {rtpTail} " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=1 leaky=downstream ! {appSinkTail}";
         if (Global.ParseLaunch(description) is not Pipeline pipeline)
