@@ -24,7 +24,7 @@ The current state is sent each frame as a MessagePack NetMQ UDP message. The det
 
 ## Controls
 
-GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`: `Capture`, `Reset`, or `Quit`). On startup GroundCon also sends `SetupMessage` once with the reticle size.
+GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`: `Capture`, `Reset`, or `Quit`). Immediately before each `Capture`, GroundCon sends `CaptureSetupMessage` with the reticle size.
 
 | Button  | Command   | Action
 |---------|-----------|--------
@@ -56,8 +56,8 @@ GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`
 |------------------------|------------------|--------
 | `OverlayPort`          | `5001`           | Local NetMQ UDP port GroundCon listens on for overlay MessagePack.
 | `RtpPort`              | `5000`           | Local UDP port GroundCon listens on for H.264 RTP.
-| `AimWidth`             | `160`            | Reticle width in pixels, sent to LockPilot once via `SetupMessage`.
-| `AimHeight`            | `120`            | Reticle height in pixels, sent to LockPilot once via `SetupMessage`.
+| `AimWidth`             | `160`            | Reticle width in pixels, sent to LockPilot via `CaptureSetupMessage`.
+| `AimHeight`            | `120`            | Reticle height in pixels, sent to LockPilot via `CaptureSetupMessage`.
 | `LockPilot.Host`       | `127.0.0.1`      | LockPilot address for the TCP command connection.
 | `LockPilot.CommandPort`| `5002`           | LockPilot TCP command port.
 
@@ -73,6 +73,6 @@ Each processed frame RADIO-s one MessagePack message over NetMQ UDP to `GroundSt
 
 ## TCP commands
 
-The MessagePack command contract lives in the shared `LockPilot.Shared` library. Messages implement `IMessage` and are serialized as a MessagePack union: `CommandMessage` (`Command`: `Capture`, `Reset`, or `Quit`) and `SetupMessage` (`AimWidth`, `AimHeight`). GroundCon PUSH-es each message as a NetMQ frame; `SetupMessage` is sent once at startup. LockPilot PULL-s on `CommandPort` and uses the last received aim size on `Capture` to build the reticle.
+The MessagePack command contract lives in the shared `LockPilot.Shared` library. Messages implement `IMessage` and are serialized as a MessagePack union: `CommandMessage` (`Command`: `Capture`, `Reset`, or `Quit`) and `CaptureSetupMessage` (`AimWidth`, `AimHeight`). GroundCon PUSH-es each message as a NetMQ frame. `CaptureSetupMessage` is sent immediately before each `Capture`. LockPilot PULL-s on `CommandPort` and uses the last received aim size on `Capture` to build the reticle.
 
 NetMQ reconnects on its own. LockPilot keeps tracking whether GroundCon is connected or not.
