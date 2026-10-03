@@ -3,7 +3,7 @@ using MessagePack;
 namespace LockPilot.Shared;
 
 [MessagePackObject]
-public class SetupMessage : IMessage
+public class CaptureSetupMessage : IMessage
 {
     [Key(0)]
     public int AimWidth { get; init; }

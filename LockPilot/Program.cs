@@ -53,9 +53,9 @@ try
         var quit = false;
         while (commandServer.TryDequeue(out var message))
         {
-            if (message is SetupMessage setupMessage)
+            if (message is CaptureSetupMessage captureSetupMessage)
             {
-                HandleSetupMessage(setupMessage);
+                HandleCaptureSetupMessage(captureSetupMessage);
                 continue;
             }
             if (message is CommandMessage commandMessage)
@@ -73,11 +73,11 @@ try
         }
     }
 
-    void HandleSetupMessage(SetupMessage setupMessage)
+    void HandleCaptureSetupMessage(CaptureSetupMessage captureSetupMessage)
     {
-        aimWidth = setupMessage.AimWidth;
-        aimHeight = setupMessage.AimHeight;
-        Console.WriteLine($"Setup aim {aimWidth}x{aimHeight}");
+        aimWidth = captureSetupMessage.AimWidth;
+        aimHeight = captureSetupMessage.AimHeight;
+        Console.WriteLine($"Capture setup {aimWidth}x{aimHeight}");
     }
 
     bool HandleCommandMessage(CommandMessage commandMessage)
