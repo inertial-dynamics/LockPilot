@@ -36,12 +36,6 @@ sealed class MainViewModel : Screen, IDisposable
             throw new InvalidOperationException($"Cannot open RTP receiver: {m_RtpReceiver.Error}");
         }
 
-        m_CommandClient.Send(new SetupMessage
-        {
-            AimWidth = m_Settings.AimWidth,
-            AimHeight = m_Settings.AimHeight
-        });
-
         m_OverlayTask = Task.Run(ReceiveOverlay);
         m_RtpTask = Task.Run(ReceiveRtp);
     }
@@ -214,7 +208,11 @@ sealed class MainViewModel : Screen, IDisposable
 
     public double OverlayStrokeThickness => 2 / FitScale;
 
-    public void Capture() => Send(Command.Capture);
+    public void Capture()
+    {
+        SendCaptureSetup();
+        Send(Command.Capture);
+    }
 
     public void Reset() => Send(Command.Reset);
 
@@ -224,6 +222,12 @@ sealed class MainViewModel : Screen, IDisposable
 
         await TryCloseAsync();
     }
+
+    private void SendCaptureSetup() => m_CommandClient.Send(new CaptureSetupMessage
+    {
+        AimWidth = m_Settings.AimWidth,
+        AimHeight = m_Settings.AimHeight
+    });
 
     private void Send(Command command) => m_CommandClient.Send(new CommandMessage { Command = command });
 
