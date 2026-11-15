@@ -25,6 +25,10 @@ try
         Console.WriteLine($"Cannot open camera via GStreamer: {capture.Error}");
         return;
     }
+    if (settings.Camera.RtpPort != null)
+    {
+        Console.WriteLine($"RTP H.264 from SITL on {settings.Camera.RtpPort}; set this port on SITL");
+    }
 
     using var tracker = new TargetTracker(settings);
     using var overlayWriter = new OverlayWriter(settings.GroundStation.Host, settings.GroundStation.OverlayPort);
