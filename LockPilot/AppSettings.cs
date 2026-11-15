@@ -4,7 +4,7 @@ namespace LockPilot;
 
 class AppSettings
 {
-    public required int FrameRate { get; init; }
+    public required CameraSettings Camera { get; init; }
 
     public required double RelocalizeIntervalSeconds { get; init; }
 
@@ -19,6 +19,13 @@ class AppSettings
     public required GroundStationSettings GroundStation { get; init; }
 
     public static AppSettings Load(string path) => JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path));
+
+    public class CameraSettings
+    {
+        public required int FrameRate { get; init; }
+
+        public int? RtpPort { get; init; }
+    }
 
     public class YoloSettings
     {
