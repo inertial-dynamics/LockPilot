@@ -19,13 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.1.2" />
-    <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
+    <PackageReference Include="Avalonia" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
     <PackageReference Include="Caliburn.Micro.Avalonia" Version="5.0.303-beta" />
-    <PackageReference Include="GstSharp.Net.App" Version="1.28.9" />
-    <PackageReference Include="NetMQ" Version="4.0.4.3" />
+    <PackageReference Include="GstSharp.Net.App" Version="1.28.17" />
+    <PackageReference Include="NetMQ" Version="4.0.4.5" />
   </ItemGroup>
 
 </Project>
