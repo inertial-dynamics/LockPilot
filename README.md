@@ -1,12 +1,12 @@
 # LockPilot
 
-A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP; tracking reads a parallel BGR `appsink` and sends state plus the detection box as MessagePack over NetMQ UDP so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
+A .NET 10 console app for live camera video, target lock inside a reticle, and tracking. Lucas–Kanade follows the target frame to frame; YOLO periodically relocates it. Capture uses GstSharp.Net (`mfvideosrc` on Windows, `libcamerasrc` on Linux) at the camera native resolution. With `Camera.RtpPort` set, capture is H.264 RTP/UDP from SITL on that port; frames are decoded and then follow the same pipeline. A GStreamer `tee` sends the **raw** camera frames as H.264 over RTP/UDP; tracking reads a parallel BGR `appsink` and sends state plus the detection box as MessagePack over NetMQ UDP so it cannot stall the stream. On Windows install the official GStreamer MSVC x86_64 runtime.
 
 LockPilot has no keyboard input. The companion Avalonia app **GroundCon** shows the RTP video with a tracker overlay, sends capture/reset/quit over TCP, and listens for overlay MessagePack on NetMQ UDP.
 
 ## Run
 
-You need a camera and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
+You need a local camera, or SITL streaming H.264 RTP to `Camera.RtpPort`, and a YOLO ONNX model in `LockPilot/Models` (file name comes from settings, default `yolov8n.onnx`). Models are not in git — put the file in the project; the build copies it to the output directory.
 
 On Windows the official GStreamer MSVC x86_64 runtime must be installed (needed for both LockPilot and GroundCon). Start LockPilot, then GroundCon. RTP and overlay go to `GroundStation.Host`; RTP uses `GroundStation.RtpPort`, overlay MessagePack uses `GroundStation.OverlayPort`. LockPilot listens for TCP commands on `CommandPort`. GroundCon binds `RtpPort` for H.264 RTP/UDP, binds `OverlayPort` for overlay NetMQ UDP, and connects to `LockPilot.Host`:`LockPilot.CommandPort`.
 
@@ -38,7 +38,8 @@ GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`
 
 | Setting                      | Default Value    | Meaning
 |------------------------------|------------------|--------
-| `FrameRate`                  | `30`             | Camera frame rate (`framerate` caps on `libcamerasrc` and `mfvideosrc`).
+| `Camera.FrameRate`           | `30`             | Local camera frame rate (`framerate` caps on `libcamerasrc` and `mfvideosrc`). Unused when `Camera.RtpPort` is set.
+| `Camera.RtpPort`             | `null`           | UDP port for an H.264 RTP camera from SITL. `null` uses the local camera. Set this same port on SITL. A missing key also means the local camera.
 | `RelocalizeIntervalSeconds`  | `2.0`            | How often to run YOLO while LK still holds the target. On LK failure, relocalization runs immediately.
 | `MinLkPoints`                | `8`              | Minimum number of good LK points. Fewer than this means LK lost the frame.
 | `MaxLkError`                 | `20.0`           | Optical-flow matching error threshold. Points with a larger error are dropped.
@@ -62,6 +63,8 @@ GroundCon buttons send NetMQ MessagePack frames (`CommandMessage` with `Command`
 | `LockPilot.CommandPort`| `5002`           | LockPilot TCP command port.
 
 ## RTP streaming
+
+When `Camera.RtpPort` is set, LockPilot listens on that UDP port for H.264 RTP (payload type 96) from SITL. Set the same port as the SITL send port. For Gazebo that is `udp_port` with `use_basic_pipeline` true; MPEG-TS is not accepted. SITL must already be streaming when LockPilot starts. The stream is decoded and then follows the same `tee` as a local camera: a GRAY8 branch for tracking and a re-encoded H.264 RTP/UDP branch to GroundCon.
 
 Raw camera frames go out as H.264 RTP/UDP (`rtph264pay` payload type 96). Tracking does not overlay the stream.
 
