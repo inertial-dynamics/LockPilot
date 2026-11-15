@@ -29,11 +29,11 @@ class GstCamera : IDisposable
 
     private void OpenCore(AppSettings settings)
     {
-        var source = OperatingSystem.IsWindows() ? "mfvideosrc" : "libcamerasrc";
+        var source = DescribeSource(settings);
         var appSinkTail = "appsink name=sink drop=true max-buffers=1 sync=false";
         var encoder = OperatingSystem.IsWindows() ? "videoconvert ! video/x-raw,format=NV12 ! mfh264enc" : "x264enc tune=zerolatency speed-preset=ultrafast";
         var rtpTail = $"{encoder} ! h264parse ! rtph264pay pt=96 config-interval=-1 ! udpsink host={settings.GroundStation.Host} port={settings.GroundStation.RtpPort} sync=false";
-        var description = $"{source} ! video/x-raw,framerate={settings.FrameRate}/1 ! videoconvert n-threads=0 ! video/x-raw,format=GRAY8 ! tee name=t " +
+        var description = $"{source} ! videoconvert n-threads=0 ! video/x-raw,format=GRAY8 ! tee name=t " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=2 ! {rtpTail} " +
             $"t. ! queue max-size-bytes=0 max-size-time=0 max-size-buffers=1 leaky=downstream ! {appSinkTail}";
         if (Global.ParseLaunch(description) is not Pipeline pipeline)
@@ -56,6 +56,18 @@ class GstCamera : IDisposable
         }
 
         IsOpened = true;
+    }
+
+    private static string DescribeSource(AppSettings settings)
+    {
+        if (settings.Camera.RtpPort != null)
+        {
+            return $"udpsrc port={settings.Camera.RtpPort} caps=\"application/x-rtp,media=video,encoding-name=H264,payload=96,clock-rate=90000\" ! " +
+                "rtpjitterbuffer latency=30 ! rtph264depay ! h264parse ! avdec_h264";
+        }
+
+        var device = OperatingSystem.IsWindows() ? "mfvideosrc" : "libcamerasrc";
+        return $"{device} ! video/x-raw,framerate={settings.Camera.FrameRate}/1";
     }
 
     public bool Read(Mat image)
