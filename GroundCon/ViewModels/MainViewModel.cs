@@ -18,6 +18,7 @@ sealed class MainViewModel : Screen, IDisposable
     readonly CommandClient m_CommandClient;
     readonly OverlayReader m_OverlayReader;
     readonly GstRtpReceiver m_RtpReceiver;
+    readonly MavlinkPilot m_MavlinkPilot;
     readonly Task m_OverlayTask;
     readonly Task m_RtpTask;
 
@@ -35,6 +36,8 @@ sealed class MainViewModel : Screen, IDisposable
             m_ReceiveToken.Dispose();
             throw new InvalidOperationException($"Cannot open RTP receiver: {m_RtpReceiver.Error}");
         }
+        m_MavlinkPilot = new(m_Settings);
+        m_MavlinkPilot.StatusChanged += MavlinkPilot_StatusChanged;
 
         m_OverlayTask = Task.Run(ReceiveOverlay);
         m_RtpTask = Task.Run(ReceiveRtp);
@@ -62,6 +65,8 @@ sealed class MainViewModel : Screen, IDisposable
         m_OverlayReader.Dispose();
         m_RtpReceiver.Dispose();
         m_ReceiveToken.Dispose();
+        m_MavlinkPilot.StatusChanged -= MavlinkPilot_StatusChanged;
+        m_MavlinkPilot.Dispose();
 
         m_Disposed = true;
     }
@@ -159,6 +164,20 @@ sealed class MainViewModel : Screen, IDisposable
         get => m_FpsLabel;
         private set => Set(ref m_FpsLabel, value);
     }
+
+    public string MavlinkStatus => m_MavlinkPilot.Status;
+
+    public void PitchUp() => m_MavlinkPilot.Pitch(1);
+
+    public void PitchDown() => m_MavlinkPilot.Pitch(-1);
+
+    public void YawLeft() => m_MavlinkPilot.Yaw(-1);
+
+    public void YawRight() => m_MavlinkPilot.Yaw(1);
+
+    public void Hold() => m_MavlinkPilot.Hover();
+
+    private void MavlinkPilot_StatusChanged() => Dispatcher.UIThread.Post(() => NotifyOfPropertyChange(nameof(MavlinkStatus)));
 
     string m_YoloElapsedLabel;
 
