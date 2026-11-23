@@ -167,15 +167,15 @@ sealed class MainViewModel : Screen, IDisposable
 
     public string MavlinkStatus => m_MavlinkPilot.Status;
 
-    public void PitchUp() => m_MavlinkPilot.Pitch(1);
+    public async Task PitchUp() => await m_MavlinkPilot.Pitch(1);
 
-    public void PitchDown() => m_MavlinkPilot.Pitch(-1);
+    public async Task PitchDown() => await m_MavlinkPilot.Pitch(-1);
 
-    public void YawLeft() => m_MavlinkPilot.Yaw(-1);
+    public async Task YawLeft() => await m_MavlinkPilot.Yaw(-1);
 
-    public void YawRight() => m_MavlinkPilot.Yaw(1);
+    public async Task YawRight() => await m_MavlinkPilot.Yaw(1);
 
-    public void Hold() => m_MavlinkPilot.Hover();
+    public async Task Hold() => await m_MavlinkPilot.Hover();
 
     private void MavlinkPilot_StatusChanged() => Dispatcher.UIThread.Post(() => NotifyOfPropertyChange(nameof(MavlinkStatus)));
 
